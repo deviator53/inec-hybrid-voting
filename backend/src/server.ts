@@ -44,7 +44,15 @@ const PRIVATE_KEY =
   "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
 const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
 
-let votingContract: ethers.Contract;
+let votingContract: ethers.Contract | null = null;
+
+// Helper to ensure contract is loaded
+const ensureContract = (): ethers.Contract => {
+  if (!votingContract) {
+    throw new Error("Voting contract not initialized");
+  }
+  return votingContract;
+};
 
 // Load contract with proper ABI
 const loadContract = async () => {
@@ -76,8 +84,9 @@ const loadContract = async () => {
 
     // Verify contract is accessible
     try {
-      const candidateCount = await votingContract.candidateCount();
-      const isActive = await votingContract.electionActive();
+      const contract = ensureContract();
+      const candidateCount = await contract.candidateCount();
+      const isActive = await contract.electionActive();
       console.log(
         "✅ Contract verified - Candidates:",
         candidateCount.toString(),
@@ -94,7 +103,8 @@ const loadContract = async () => {
     }
 
     // Listen to VoteCast events
-    votingContract.on(
+    const contract = ensureContract();
+    contract.on(
       "VoteCast",
       (candidateId, party, voterHash, timestamp, blockNumber) => {
         console.log("📊 Vote cast event:", {
@@ -123,9 +133,10 @@ app.get("/api/reload-contract", async (req, res) => {
     await loadContract();
 
     if (votingContract) {
-      const candidateCount = await votingContract.candidateCount();
-      const isActive = await votingContract.electionActive();
-      const address = await votingContract.getAddress();
+      const contract = ensureContract();
+      const candidateCount = await contract.candidateCount();
+      const isActive = await contract.electionActive();
+      const address = await contract.getAddress();
 
       res.json({
         success: true,
@@ -238,7 +249,8 @@ app.post("/api/voter/accredit", async (req, res) => {
 
     // Check if already voted on blockchain
     if (votingContract) {
-      const alreadyVoted = await votingContract.hasAlreadyVoted(voterHash);
+      const contract = ensureContract();
+      const alreadyVoted = await contract.hasAlreadyVoted(voterHash);
       if (alreadyVoted) {
         return res
           .status(403)
@@ -286,7 +298,8 @@ app.post("/api/vote/cast", async (req, res) => {
     }
 
     // Cast vote on blockchain
-    const tx = await votingContract.castVote(candidateId, voterHash);
+    const contract = ensureContract();
+    const tx = await contract.castVote(candidateId, voterHash);
     const receipt = await tx.wait();
 
     // Update database
@@ -297,7 +310,7 @@ app.post("/api/vote/cast", async (req, res) => {
 
     // Get candidate info
     const [id, name, party, voteCount] =
-      await votingContract.getCandidate(candidateId);
+      await contract.getCandidate(candidateId);
 
     // Save vote record
     const vote = new Vote({
@@ -349,8 +362,9 @@ app.get("/api/results", async (req, res) => {
         .json({ success: false, error: "Blockchain not connected" });
     }
 
-    const [names, parties, votes] = await votingContract.getResults();
-    const totalVotes = await votingContract.totalVotes();
+    const contract = ensureContract();
+    const [names, parties, votes] = await contract.getResults();
+    const totalVotes = await contract.totalVotes();
     const blockNumber = await provider.getBlockNumber();
 
     // Get additional candidate info from database
@@ -393,7 +407,8 @@ app.get("/api/results/:state", async (req, res) => {
     }
 
     // Get all results
-    const [names, parties, votes] = await votingContract.getResults();
+    const contract = ensureContract();
+    const [names, parties, votes] = await contract.getResults();
     const blockNumber = await provider.getBlockNumber();
 
     // Get candidates for this state
@@ -496,18 +511,19 @@ app.post("/api/candidates", async (req, res) => {
     let blockchainId = null;
     if (votingContract) {
       try {
-        const contractAddress = await votingContract.getAddress();
+        const contract = ensureContract();
+        const contractAddress = await contract.getAddress();
         console.log("📍 Contract address:", contractAddress);
 
-        const currentCount = await votingContract.candidateCount();
+        const currentCount = await contract.candidateCount();
         console.log("📊 Current candidates:", currentCount.toString());
 
-        const tx = await votingContract.addCandidate(name, party);
+        const tx = await contract.addCandidate(name, party);
         console.log("⏳ Waiting for transaction...");
         const receipt = await tx.wait();
 
         // Get the candidateCount to determine the ID
-        const candidateCount = await votingContract.candidateCount();
+        const candidateCount = await contract.candidateCount();
         blockchainId = candidateCount.toString();
 
         console.log(
@@ -585,7 +601,8 @@ app.post("/api/election/activate", async (req, res) => {
         .json({ success: false, error: "Blockchain not connected" });
     }
 
-    const tx = await votingContract.activateElection();
+    const contract = ensureContract();
+    const tx = await contract.activateElection();
     await tx.wait();
 
     console.log("✅ Election activated");
@@ -603,7 +620,8 @@ app.post("/api/election/deactivate", async (req, res) => {
         .json({ success: false, error: "Blockchain not connected" });
     }
 
-    const tx = await votingContract.deactivateElection();
+    const contract = ensureContract();
+    const tx = await contract.deactivateElection();
     await tx.wait();
 
     console.log("⏸️ Election deactivated");
@@ -622,9 +640,10 @@ app.get("/api/election/status", async (req, res) => {
       });
     }
 
-    const isActive = await votingContract.electionActive();
-    const totalVotes = await votingContract.totalVotes();
-    const candidateCount = await votingContract.candidateCount();
+    const contract = ensureContract();
+    const isActive = await contract.electionActive();
+    const totalVotes = await contract.totalVotes();
+    const candidateCount = await contract.candidateCount();
 
     res.json({
       success: true,
