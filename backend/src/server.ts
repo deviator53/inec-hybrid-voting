@@ -44,10 +44,10 @@ const PRIVATE_KEY =
   "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
 const wallet = new ethers.Wallet(PRIVATE_KEY, provider);
 
-let votingContract: ethers.Contract | null = null;
+let votingContract: any = null;
 
 // Helper to ensure contract is loaded
-const ensureContract = (): ethers.Contract => {
+const ensureContract = (): any => {
   if (!votingContract) {
     throw new Error("Voting contract not initialized");
   }
@@ -106,7 +106,13 @@ const loadContract = async () => {
     const contract = ensureContract();
     contract.on(
       "VoteCast",
-      (candidateId, party, voterHash, timestamp, blockNumber) => {
+      (
+        candidateId: any,
+        party: any,
+        voterHash: any,
+        timestamp: any,
+        blockNumber: any,
+      ) => {
         console.log("📊 Vote cast event:", {
           candidateId: candidateId.toString(),
           party,
@@ -529,7 +535,7 @@ app.post("/api/candidates", async (req, res) => {
         console.log(
           `✅ Candidate added to blockchain: ${name} (${party}) - ID: ${blockchainId}`,
         );
-      } catch (blockchainError) {
+      } catch (blockchainError: any) {
         console.error("❌ Blockchain error:", blockchainError);
         return res.status(500).json({
           success: false,
