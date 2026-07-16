@@ -5,6 +5,8 @@ import { io, Socket } from "socket.io-client";
 import { getAllStateNames } from "@/data/nigeriaData";
 import Navigation from "@/components/Navigation";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
 interface Candidate {
   id: number;
   name: string;
@@ -43,7 +45,7 @@ export default function LivePollsPage() {
   useEffect(() => {
     fetchResults();
 
-    const newSocket = io("http://localhost:5000");
+    const newSocket = io(API_URL);
 
     newSocket.on("connect", () => {
       console.log("Connected to live updates");
@@ -77,8 +79,8 @@ export default function LivePollsPage() {
   const fetchResults = async () => {
     try {
       const url = selectedState
-        ? `http://localhost:5000/api/results/${selectedState}`
-        : "http://localhost:5000/api/results";
+        ? `${API_URL}/api/results/${selectedState}`
+        : `${API_URL}/api/results`;
       const res = await fetch(url);
       const data: ResultsData = await res.json();
 

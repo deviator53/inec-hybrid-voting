@@ -2,11 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import {
-  nigeriaStates,
-  getLGAsForState,
-  getAllStateNames,
-} from "@/data/nigeriaData";
+import { getLGAsForState, getAllStateNames } from "@/data/nigeriaData";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function SetupPage() {
   const router = useRouter();
@@ -43,7 +41,7 @@ export default function SetupPage() {
   const initializeSession = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/session/initialize", {
+      const res = await fetch(`${API_URL}/api/session/initialize`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ward, lga, state, presidingOfficer }),

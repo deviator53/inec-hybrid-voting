@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { getAllStateNames } from "@/data/nigeriaData";
 import Navigation from "@/components/Navigation";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
 interface Candidate {
   _id: string;
   name: string;
@@ -56,8 +58,8 @@ export default function ElectoralOfficerPage() {
   const fetchCandidates = async (state?: string) => {
     try {
       const url = state
-        ? `http://localhost:5000/api/candidates/${state}`
-        : "http://localhost:5000/api/candidates";
+        ? `${API_URL}/api/candidates/${state}`
+        : `${API_URL}/api/candidates`;
       const res = await fetch(url);
       const data = await res.json();
       if (data.success) {
@@ -70,7 +72,7 @@ export default function ElectoralOfficerPage() {
 
   const fetchElectionStatus = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/election/status");
+      const res = await fetch(`${API_URL}/api/election/status`);
       const data = await res.json();
       if (data.success) {
         setElectionActive(data.isActive);
@@ -95,7 +97,7 @@ export default function ElectoralOfficerPage() {
 
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/election/activate", {
+      const res = await fetch(`${API_URL}/api/election/activate`, {
         method: "POST",
       });
       const data = await res.json();
@@ -125,7 +127,7 @@ export default function ElectoralOfficerPage() {
 
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/election/deactivate", {
+      const res = await fetch(`${API_URL}/api/election/deactivate`, {
         method: "POST",
       });
       const data = await res.json();
@@ -158,7 +160,7 @@ export default function ElectoralOfficerPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5000/api/candidates", {
+      const res = await fetch(`${API_URL}/api/candidates`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -188,7 +190,7 @@ export default function ElectoralOfficerPage() {
     if (!confirm("Are you sure you want to delete this candidate?")) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/candidates/${id}`, {
+      const res = await fetch(`${API_URL}/api/candidates/${id}`, {
         method: "DELETE",
       });
       const data = await res.json();

@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Navigation from "@/components/Navigation";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
 export default function AccreditationPage() {
   const router = useRouter();
   const [nin, setNin] = useState("");
@@ -34,7 +36,7 @@ export default function AccreditationPage() {
     // Fetch blockchain stats
     const fetchBlockchain = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/blockchain/stats");
+        const res = await fetch(`${API_URL}/api/blockchain/stats`);
         const data = await res.json();
         if (data.success) {
           setBlockNumber(data.blockNumber);
@@ -96,22 +98,19 @@ export default function AccreditationPage() {
 
       // Accredit voter
       const sessionToken = localStorage.getItem("sessionToken") || "";
-      const accreditRes = await fetch(
-        "http://localhost:5000/api/voter/accredit",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            nin,
-            sessionId: sessionToken,
-            ward,
-            lga,
-            state,
-            fingerprintHash: fpData.fingerprintHash,
-            faceHash: faceData.faceHash,
-          }),
-        },
-      );
+      const accreditRes = await fetch(`${API_URL}/api/voter/accredit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nin,
+          sessionId: sessionToken,
+          ward,
+          lga,
+          state,
+          fingerprintHash: fpData.fingerprintHash,
+          faceHash: faceData.faceHash,
+        }),
+      });
 
       const accreditData = await accreditRes.json();
       if (accreditData.success) {

@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
 interface Candidate {
   _id: string;
   name: string;
@@ -63,7 +65,7 @@ export default function BallotPage() {
     // Fetch blockchain stats
     const fetchBlockchain = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/blockchain/stats");
+        const res = await fetch(`${API_URL}/api/blockchain/stats`);
         const data = await res.json();
         if (data.success) {
           setCurrentBlockHeight(data.blockNumber);
@@ -85,7 +87,7 @@ export default function BallotPage() {
   const fetchCandidates = async (state: string) => {
     try {
       setLoadingCandidates(true);
-      const res = await fetch(`http://localhost:5000/api/candidates/${state}`);
+      const res = await fetch(`${API_URL}/api/candidates/${state}`);
       const data = await res.json();
       if (data.success && data.candidates) {
         setCandidates(data.candidates);
@@ -119,7 +121,7 @@ export default function BallotPage() {
       const candidateIndex =
         candidates.findIndex((c) => c._id === selectedCandidate._id) + 1;
 
-      const res = await fetch("http://localhost:5000/api/vote/cast", {
+      const res = await fetch(`${API_URL}/api/vote/cast`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

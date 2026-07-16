@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
 interface ElectionStatus {
   success: boolean;
   isActive: boolean;
@@ -31,7 +33,7 @@ export default function AdminPage() {
   const fetchElectionStatus = async () => {
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:5000/api/election/status");
+      const res = await fetch(`${API_URL}/api/election/status`);
       const data = await res.json();
 
       if (data.success) {
@@ -65,7 +67,7 @@ export default function AdminPage() {
       setActivating(true);
       setMessage(null);
 
-      const res = await fetch("http://localhost:5000/api/election/activate", {
+      const res = await fetch(`${API_URL}/api/election/activate`, {
         method: "POST",
       });
       const data = await res.json();

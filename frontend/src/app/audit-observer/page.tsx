@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { io, Socket } from "socket.io-client";
 import Navigation from "@/components/Navigation";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
 export default function AuditObserverPage() {
   const [results, setResults] = useState<any[]>([]);
   const [totalVotes, setTotalVotes] = useState(0);
@@ -35,7 +37,7 @@ export default function AuditObserverPage() {
     fetchResults();
 
     // Connect to WebSocket
-    const newSocket = io("http://localhost:5000");
+    const newSocket = io(API_URL);
     setSocket(newSocket);
 
     newSocket.on("voteCast", (data) => {
@@ -56,7 +58,7 @@ export default function AuditObserverPage() {
 
   const fetchResults = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/results");
+      const res = await fetch(`${API_URL}/api/results`);
       const data = await res.json();
       if (data.success) {
         setResults(data.results);
