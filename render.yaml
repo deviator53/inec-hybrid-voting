@@ -1,0 +1,44 @@
+services:
+  # Backend API Service
+  - type: web
+    name: inec-voting-backend
+    runtime: node
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGODB_URI
+        sync: false
+      - key: ALCHEMY_AMOY_URL
+        sync: false
+      - key: ALCHEMY_POLYGON_URL
+        sync: false
+      - key: VOTING_CONTRACT_ADDRESS
+        sync: false
+      - key: DEPLOYER_PRIVATE_KEY
+        sync: false
+
+  # Frontend Service (if deploying to Render)
+  - type: web
+    name: inec-voting-frontend
+    runtime: node
+    region: oregon
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
+      - key: NEXT_PUBLIC_CONTRACT_ADDRESS
+        sync: false
+      - key: NEXT_PUBLIC_ALCHEMY_API_KEY
+        sync: false
