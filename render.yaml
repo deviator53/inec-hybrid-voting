@@ -24,6 +24,19 @@ services:
       - key: DEPLOYER_PRIVATE_KEY
         sync: false
 
+  # Hardware Bridge Service (Simulated)
+  - type: web
+    name: inec-hardware-bridge
+    runtime: python
+    region: oregon
+    plan: free
+    rootDir: hardware-bridge
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    envVars:
+      - key: PORT
+        value: 8000
+
   # Frontend Service (if deploying to Render)
   - type: web
     name: inec-voting-frontend
@@ -41,4 +54,6 @@ services:
       - key: NEXT_PUBLIC_CONTRACT_ADDRESS
         sync: false
       - key: NEXT_PUBLIC_ALCHEMY_API_KEY
+        sync: false
+      - key: NEXT_PUBLIC_HARDWARE_BRIDGE_URL
         sync: false
