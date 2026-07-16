@@ -29,7 +29,9 @@ export default function SetupPage() {
 
   const fetchHardwareStatus = async () => {
     try {
-      const res = await fetch("http://localhost:5050/api/hardware/status");
+      const hardwareBridgeUrl =
+        process.env.NEXT_PUBLIC_HARDWARE_BRIDGE_URL || "http://localhost:5050";
+      const res = await fetch(`${hardwareBridgeUrl}/api/hardware/status`);
       const data = await res.json();
       setHardwareStatus(data);
       setSystemReady(data.allSystemsNominal);

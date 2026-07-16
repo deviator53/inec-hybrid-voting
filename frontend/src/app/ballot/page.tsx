@@ -138,7 +138,10 @@ export default function BallotPage() {
 
         // Trigger printer
         setPrinting(true);
-        await fetch("http://localhost:5050/api/printer/print-receipt", {
+        const hardwareBridgeUrl =
+          process.env.NEXT_PUBLIC_HARDWARE_BRIDGE_URL ||
+          "http://localhost:5050";
+        await fetch(`${hardwareBridgeUrl}/api/printer/print-receipt`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
