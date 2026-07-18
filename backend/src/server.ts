@@ -77,30 +77,48 @@ const ensureContract = (): any => {
 // Load contract with proper ABI
 const loadContract = async () => {
   try {
-    const fs = await import("fs");
-    const path = await import("path");
+    // Try to load from environment variables first (for production)
+    const contractAddress = process.env.VOTING_CONTRACT_ADDRESS;
+    const contractABI = process.env.CONTRACT_ABI;
 
-    // Load contract address
-    const deploymentPath = path.join(
-      process.cwd(),
-      "../blockchain/deployment.json",
-    );
-    const deployment = JSON.parse(fs.readFileSync(deploymentPath, "utf8"));
+    let contractAddr = "";
 
-    // Load contract ABI from artifacts
-    const artifactPath = path.join(
-      process.cwd(),
-      "../blockchain/artifacts/contracts/ElectorateVoting.sol/ElectorateVoting.json",
-    );
-    const artifact = JSON.parse(fs.readFileSync(artifactPath, "utf8"));
+    if (contractAddress && contractABI) {
+      // Load from environment variables
+      console.log("📝 Loading contract from environment variables");
+      const abi = JSON.parse(contractABI);
+      votingContract = new ethers.Contract(contractAddress, abi, wallet);
+      contractAddr = contractAddress;
+      console.log("✅ Voting contract loaded:", contractAddress);
+    } else {
+      // Fallback to file system (for local development)
+      console.log("📝 Loading contract from file system");
+      const fs = await import("fs");
+      const path = await import("path");
 
-    votingContract = new ethers.Contract(
-      deployment.address,
-      artifact.abi,
-      wallet,
-    );
-    console.log("✅ Voting contract loaded:", deployment.address);
-    console.log("✅ Deployment timestamp:", deployment.timestamp);
+      // Load contract address
+      const deploymentPath = path.join(
+        process.cwd(),
+        "../blockchain/deployment.json",
+      );
+      const deployment = JSON.parse(fs.readFileSync(deploymentPath, "utf8"));
+
+      // Load contract ABI from artifacts
+      const artifactPath = path.join(
+        process.cwd(),
+        "../blockchain/artifacts/contracts/ElectorateVoting.sol/ElectorateVoting.json",
+      );
+      const artifact = JSON.parse(fs.readFileSync(artifactPath, "utf8"));
+
+      votingContract = new ethers.Contract(
+        deployment.address,
+        artifact.abi,
+        wallet,
+      );
+      contractAddr = deployment.address;
+      console.log("✅ Voting contract loaded:", deployment.address);
+      console.log("✅ Deployment timestamp:", deployment.timestamp);
+    }
 
     // Verify contract is accessible
     try {
@@ -115,10 +133,7 @@ const loadContract = async () => {
       );
     } catch (verifyError: any) {
       console.error("❌ Contract verification failed:", verifyError.message);
-      console.error(
-        "❌ Make sure the contract is deployed at:",
-        deployment.address,
-      );
+      console.error("❌ Make sure the contract is deployed at:", contractAddr);
       throw new Error("Contract not accessible");
     }
 
